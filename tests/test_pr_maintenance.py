@@ -8,25 +8,19 @@ import sys
 
 import pytest
 
-from scripts.harness import pr_maintenance
-from scripts.harness.pr_maintenance import MaintenanceError, check_gate, check_merge, check_pr, check_review
+from scripts import pr_maintenance
+from scripts.pr_maintenance import MaintenanceError, check_gate, check_merge, check_pr, check_review
 
 
 BODY = """## Knowledge updates
 No knowledge changes.
 
-## Testing
-Red: test_rejects_stale_ticket failed because the completed ticket remained queued.
-Green: python -m pytest tests -q passed.
-Refactor: No refactoring was needed.
+## Validation
 
-## Maintenance
-Ticket: APP-12
-Ticket outcome: complete
-Ticket reason: Completed the agreed ticket scope.
-Context disposition: unchanged
-TDD: applied
-TDD reason: Added new maintenance behavior.
+| Check | Result and evidence |
+| --- | --- |
+| Python tests | Passed all tests. |
+| Spend | $0 |
 """
 
 
@@ -46,64 +40,41 @@ def repository(tmp_path):
     git(tmp_path, "config", "user.email", "tests@example.invalid")
     git(tmp_path, "config", "user.name", "Tests")
     (tmp_path / "docs").mkdir()
-    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- APP-12: Maintenance\n- APP-120: Other task\n\n## Done\n")
+    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- TASK-12: Maintenance\n- TASK-120: Other task\n\n## Done\n")
     (tmp_path / "docs/usage.md").write_text("# Usage\n\n## Save files\n\nCurrent behavior.\n")
     (tmp_path / "AGENTS.md").write_text("# Guidance\n\n[Usage](docs/usage.md#save-files)\n")
     (tmp_path / "main.py").write_text("value = 1\n")
     base = commit(tmp_path)
-    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- APP-120: Other task\n\n## Done\n\n- APP-12: Maintenance\n")
+    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- TASK-120: Other task\n\n## Done\n\n- TASK-12: Maintenance\n")
     (tmp_path / "main.py").write_text("value = 2\n")
     head = commit(tmp_path)
-    return tmp_path, base, head, {"board_path": "docs/board.md", "board_heading": "To build", "repository_full_name": "test/repo", "pr_number": 12}
+    return tmp_path, base, head, {"repository_full_name": "test/repo", "pr_number": 12}
 
 
 def body_with_board_update():
-    return BODY.replace("No knowledge changes.", "- Updated [board](docs/board.md) to remove completed work.").replace("Context disposition: unchanged", "Context disposition: updated")
+    return BODY.replace("No knowledge changes.", "- Updated [board](docs/board.md) to remove completed work.")
 
 
-def test_completed_ticket_is_removed_without_matching_another_ticket(repository):
-    request = check_pr(*repository[:3], body_with_board_update(), repository[3])
+@pytest.mark.parametrize("format", ["table", "bullets"])
+def test_validation_accepts_grouped_results_without_maintenance_fields(repository, format):
+    body = body_with_board_update()
+    if format == "bullets":
+        body = body.replace("| Check | Result and evidence |\n| --- | --- |\n", "")
+        body = "\n".join("- " + ": ".join(line.strip("| ").split(" | ", 1)) if line.startswith("|") else line for line in body.splitlines())
+    request = check_pr(*repository[:3], body, repository[3])
     assert request["head_sha"] == repository[2]
     assert request["code_changed"] is True
     assert "docs/board.md" in request["required_context_files"]
 
 
-def test_completed_ticket_cannot_remain_queued(repository):
-    root, base, _, config = repository
-    git(root, "checkout", base, "--", "docs/board.md")
-    head = commit(root)
-    with pytest.raises(MaintenanceError, match="still in"):
-        check_pr(root, base, head, BODY, config)
-
-
-def test_partial_ticket_cannot_disappear_from_queue(repository):
-    with pytest.raises(MaintenanceError, match="Partial ticket"):
-        check_pr(*repository[:3], body_with_board_update().replace("outcome: complete", "outcome: partial"), repository[3])
-
-
-def test_plan_ticket_completion_removes_its_delivery_section(repository):
-    root, _, _, config = repository
-    (root / "docs/board.md").write_text("# Plan\n\n## Build\n\n### PR 1 — First change\n\nBuild this behavior.\n\n### PR 10 — Later change\n\nKeep this pending.\n")
-    base = commit(root)
-    (root / "docs/board.md").write_text("# Plan\n\n## Build\n\n### PR 10 — Later change\n\nKeep this pending.\n")
-    head = commit(root)
-    config["board_heading"] = "Build"
-    body = body_with_board_update().replace("Ticket: APP-12", "Ticket: PR-1")
-    assert check_pr(root, base, head, body, config)["head_sha"] == head
-    git(root, "checkout", base, "--", "docs/board.md")
-    head = commit(root)
-    with pytest.raises(MaintenanceError, match="still in"):
-        check_pr(root, base, head, body, config)
-
-
-def test_ticket_checks_require_a_configured_board(repository):
-    with pytest.raises(MaintenanceError, match="board_path"):
-        check_pr(*repository[:3], body_with_board_update(), {"board_path": None, "board_heading": "To build"})
-
-
-def test_untracked_work_requires_a_reason(repository):
-    body = body_with_board_update().replace("Ticket: APP-12", "Ticket: none").replace("outcome: complete", "outcome: none").replace("Ticket reason: Completed the agreed ticket scope.", "Ticket reason:")
-    with pytest.raises(MaintenanceError, match="Ticket reason"):
+@pytest.mark.parametrize("missing", ["Validation", "Spend"])
+def test_validation_requires_validation_and_spend(repository, missing):
+    body = body_with_board_update()
+    if missing == "Validation":
+        body = body.split("## Validation")[0]
+    else:
+        body = "\n".join(line for line in body.splitlines() if not line.startswith(f"| {missing} |"))
+    with pytest.raises(MaintenanceError, match=missing):
         check_pr(*repository[:3], body, repository[3])
 
 
@@ -146,21 +117,21 @@ def test_context_retirement_requires_repairing_inbound_links(repository):
     root, base, _, config = repository
     (root / "docs/usage.md").unlink()
     head = commit(root)
-    body = body_with_board_update().replace("## Testing", f"- Removed [usage](https://github.com/test/repo/blob/{base}/docs/usage.md).\n\n## Testing")
+    body = body_with_board_update().replace("## Validation", f"- Removed [usage](https://github.com/test/repo/blob/{base}/docs/usage.md).\n\n## Validation")
     with pytest.raises(MaintenanceError, match="AGENTS.md"):
         check_pr(root, base, head, body, config)
 
 
-def test_tdd_requires_actual_failing_and_passing_evidence(repository):
-    with pytest.raises(MaintenanceError, match="Red"):
-        check_pr(*repository[:3], body_with_board_update().replace("Red: test_rejects_stale_ticket failed because the completed ticket remained queued.", "Red:"), repository[3])
+def test_validation_rejects_blank_spend(repository):
+    with pytest.raises(MaintenanceError, match="Spend"):
+        check_pr(*repository[:3], body_with_board_update().replace("$0", ""), repository[3])
 
 
-def test_documentation_only_work_does_not_require_tdd(repository):
+def test_documentation_only_work_accepts_test_results_and_spend(repository):
     root, base, _, config = repository
     git(root, "checkout", base, "--", "main.py")
     head = commit(root)
-    body = body_with_board_update().replace("TDD: applied", "TDD: not-applicable").replace("TDD reason: Added new maintenance behavior.", "TDD reason: Documentation only.")
+    body = body_with_board_update()
     assert check_pr(root, base, head, body, config)["code_changed"] is False
 
 
@@ -176,7 +147,7 @@ def test_failed_gate_reports_stage_failure_without_api_access(tmp_path):
     event.write_text(json.dumps({"pull_request": {"base": {"sha": "a" * 40}, "head": {"sha": "b" * 40}, "body": BODY}}))
     environment = {key: value for key, value in os.environ.items() if key != "GH_TOKEN"}
     environment.update(GITHUB_EVENT_PATH=str(event), JOB_RESULTS=json.dumps({"validation": "failure", "context": "success", "review": "skipped"}))
-    script = Path(__file__).resolve().parent.parent.parent / "scripts/harness/pr_maintenance.py"
+    script = Path(__file__).resolve().parent.parent / "scripts/pr_maintenance.py"
     result = subprocess.run([sys.executable, str(script), "gate"], env=environment, capture_output=True, text=True)
     assert result.returncode == 1
     assert "validation did not succeed: failure" in result.stderr
@@ -197,7 +168,73 @@ def test_actions_gate_requires_only_deterministic_checks():
 
 
 def review_report(request, decision="ready"):
-    return {"repository": request["repository"], "pr_number": request["pr_number"], "base_sha": request["base_sha"], "head_sha": request["head_sha"], "body_sha256": request["body_sha256"], "decision": decision, "summary": "Reviewed code and affected context.", "reviewed_context_files": request["required_context_files"], "findings": []}
+    return {"repository": request["repository"], "pr_number": request["pr_number"], "base_sha": request["base_sha"], "head_sha": request["head_sha"], "body_sha256": request["body_sha256"], "decision": decision, "summary": "Reviewed code and affected context.", "reviewed_context_files": request["required_context_files"], "context_review": [{"file": path, "verdict": "ready", "reason": "Removed completed work so the next task is selected from the remaining queue."} for path in request["changed_context_files"]], "language_review": {"verdict": "ready", "reason": "Explains the completed work and test results in familiar words."}, "findings": []}
+
+
+@pytest.mark.parametrize("field", ["context_review", "language_review", "both"])
+def test_review_rejects_blanket_approval_without_specific_checks(repository, field):
+    request = check_pr(*repository[:3], body_with_board_update(), repository[3])
+    report = review_report(request)
+    for name in ["context_review", "language_review"] if field == "both" else [field]:
+        del report[name]
+    with pytest.raises(MaintenanceError, match="report"):
+        check_review(report, request)
+
+
+@pytest.mark.parametrize("change", ["omitted", "duplicate", "unrelated", "blank_reason"])
+def test_review_requires_one_reason_for_each_changed_context_file(repository, change):
+    request = check_pr(*repository[:3], body_with_board_update(), repository[3])
+    report = review_report(request)
+    if change == "omitted":
+        report["context_review"] = []
+    elif change == "duplicate":
+        report["context_review"] *= 2
+    elif change == "unrelated":
+        report["context_review"][0]["file"] = "docs/usage.md"
+    else:
+        report["context_review"][0]["reason"] = "  \n"
+    with pytest.raises(MaintenanceError):
+        check_review(report, request)
+
+
+@pytest.mark.parametrize("field", ["context_review", "language_review"])
+def test_review_cannot_approve_flagged_context_or_language(merge_inputs, field):
+    snapshot, request, report = merge_inputs
+    item = report[field][0] if field == "context_review" else report[field]
+    item.update(verdict="changes-required", reason="Remove the repeated milestone recap." if field == "context_review" else "Explain transient transfer recovery in familiar words.")
+    with pytest.raises(MaintenanceError, match="ready"):
+        check_review(report, request)
+    report["decision"] = "changes-required"
+    check_review(report, request)
+    with pytest.raises(MaintenanceError, match="review"):
+        check_merge(snapshot, request, report)
+
+
+def test_context_review_covers_removed_files(repository):
+    root, base, _, config = repository
+    (root / "docs/usage.md").unlink()
+    (root / "AGENTS.md").write_text("# Guidance\n")
+    head = commit(root)
+    body = body_with_board_update().replace("## Validation", f"- Updated [guidance](AGENTS.md).\n- Removed [usage](https://github.com/test/repo/blob/{base}/docs/usage.md).\n\n## Validation")
+    request = check_pr(root, base, head, body, config)
+    assert request["changed_context_files"] == ["AGENTS.md", "docs/board.md", "docs/usage.md"]
+    report = review_report(request)
+    check_review(report, request)
+    report["context_review"] = [item for item in report["context_review"] if item["file"] != "docs/usage.md"]
+    with pytest.raises(MaintenanceError, match="context"):
+        check_review(report, request)
+
+
+def test_unchanged_context_needs_no_invented_justification(repository):
+    root, base, _, config = repository
+    git(root, "checkout", base, "--", "docs/board.md")
+    head = commit(root)
+    body = BODY
+    request = check_pr(root, base, head, body, config)
+    assert request["changed_context_files"] == []
+    report = review_report(request)
+    assert report["context_review"] == []
+    check_review(report, request)
 
 
 @pytest.fixture
@@ -229,7 +266,7 @@ def test_merge_guard_blocks_prs_that_are_not_ready(merge_inputs, field, value):
 
 
 @pytest.mark.parametrize("field", ["head_sha", "base_sha", "body"])
-def test_merge_guard_blocks_changes_after_agent_review(merge_inputs, field):
+def test_merge_guard_blocks_changes_after_codex_review(merge_inputs, field):
     snapshot, request, report = merge_inputs
     snapshot["pr"][field] = "Changed description" if field == "body" else "c" * 40
     with pytest.raises(MaintenanceError, match="revision"):
@@ -243,7 +280,7 @@ def test_merge_guard_rejects_review_of_a_different_pr(merge_inputs):
         check_merge(snapshot, request, report)
 
 
-def test_merge_guard_requires_agent_to_finish_the_review(merge_inputs):
+def test_merge_guard_requires_codex_to_finish_the_review(merge_inputs):
     snapshot, request, report = merge_inputs
     report["decision"] = "changes-required"
     with pytest.raises(MaintenanceError, match="review"):
@@ -336,11 +373,10 @@ def test_review_and_merge_commands_require_completion_before_producing_a_plan(re
     root, _, _, config = repository
     snapshot, _, _ = merge_inputs
     (root / ".github").mkdir()
-    (root / ".github/agent-shape.json").write_text(json.dumps(config))
-    (root / ".github/review.schema.json").write_text((pr_maintenance.ROOT / ".github/review.schema.json").read_text())
-    (root / ".github/review-prompt.md").write_text("# Review\n\nReview behavior and context.\n")
+    (root / ".github/codex-review.schema.json").write_text((pr_maintenance.ROOT / ".github/codex-review.schema.json").read_text())
+    (root / ".github/codex-review.md").write_text("# Review\n\nReview behavior and context.\n")
     snapshot["pr"]["head_sha"] = commit(root)
-    snapshot["pr"]["body"] = body_with_board_update().replace("## Testing", "- Created [review](.github/review-prompt.md) criteria.\n\n## Testing")
+    snapshot["pr"]["body"] = body_with_board_update().replace("## Validation", "- Created [review](.github/codex-review.md) criteria.\n\n## Validation")
     monkeypatch.setattr(pr_maintenance, "ROOT", root)
     records = tmp_path_factory.mktemp("review-records")
     snapshot_path, request_path, report_path, plan_path = [records / name for name in ["snapshot.json", "request.json", "report.json", "plan.json"]]
@@ -376,7 +412,7 @@ def test_actions_gate_publishes_evidence_for_the_verified_live_revision(merge_in
     assert json.loads(line.split("=", 1)[1]) == snapshot["ci_evidence"]
 
 
-def test_agent_report_requires_current_revision_and_context_coverage(repository):
+def test_codex_report_requires_current_revision_and_context_coverage(repository):
     request = check_pr(*repository[:3], body_with_board_update(), repository[3])
     report = review_report(request)
     check_review(report, request)
@@ -389,7 +425,7 @@ def test_agent_report_requires_current_revision_and_context_coverage(repository)
         check_review(report, request)
 
 
-def test_agent_findings_are_preserved_for_human_review(repository):
+def test_codex_findings_are_preserved_for_human_review(repository):
     request = check_pr(*repository[:3], body_with_board_update(), repository[3])
     report = review_report(request, "changes-required")
     report["findings"] = [{"category": "context", "severity": "P1", "file": "docs/usage.md", "line": 5, "message": "The usage text conflicts with the changed behavior."}]
@@ -397,7 +433,42 @@ def test_agent_findings_are_preserved_for_human_review(repository):
     assert report["findings"][0]["severity"] == "P1"
 
 
-def test_agent_report_rejects_malformed_findings(repository):
+def test_codex_report_rejects_malformed_findings(repository):
     request = check_pr(*repository[:3], body_with_board_update(), repository[3])
     with pytest.raises(MaintenanceError, match="report"):
         check_review({"findings": "approved"}, request)
+
+
+@pytest.mark.parametrize("text,limit", [(" ".join(["word"] * 26) + ".", 25), ("1. " + " ".join(["word"] * 21) + ".", 20)])
+def test_writing_check_rejects_long_descriptions_and_numbered_steps(text, limit):
+    with pytest.raises(MaintenanceError, match=f"ASD-STE100.*{limit}"):
+        pr_maintenance.check_writing(text, "PR description")
+    pr_maintenance.check_writing(text.replace("word ", "", 1), "PR description")
+
+
+def test_writing_check_preserves_technical_evidence_and_counts_link_labels():
+    evidence = " ".join(["argument"] * 30)
+    pr_maintenance.check_writing(f"Run `{evidence}`.\n\n```sh\n{evidence}\n```\n\n> {evidence}\n\nRead [usage](https://example.com/a.b).", "guide.md")
+    sentence = " ".join(["word"] * 25)
+    pr_maintenance.check_writing(f'“{sentence}.” {sentence}.', "guide.md")
+    with pytest.raises(MaintenanceError, match="ASD-STE100"):
+        pr_maintenance.check_writing(f"Read [{evidence}](https://example.com).", "guide.md")
+
+
+def test_pr_check_validates_body_and_only_changed_markdown_passages(repository):
+    root, base, head, config = repository
+    long_sentence = " ".join(["word"] * 26) + "."
+    with pytest.raises(MaintenanceError, match="PR description.*ASD-STE100"):
+        check_pr(root, base, head, body_with_board_update() + "\n" + long_sentence, config)
+    usage = root / "docs/usage.md"
+    usage.write_text(usage.read_text() + "\n" + " ".join(["word"] * 13) + "\n" + " ".join(["word"] * 13) + ".\n")
+    base_with_old_prose = commit(root)
+    usage.write_text(usage.read_text() + "\nNew behavior.\n")
+    head = commit(root)
+    body = BODY
+    body = body.replace("No knowledge changes.", "Updated [usage](docs/usage.md) with the new behavior.")
+    check_pr(root, base_with_old_prose, head, body, config)
+    usage.write_text(usage.read_text().replace("word", "changed", 1))
+    head = commit(root)
+    with pytest.raises(MaintenanceError, match="docs/usage.md.*ASD-STE100"):
+        check_pr(root, base_with_old_prose, head, body, config)

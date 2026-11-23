@@ -1,28 +1,41 @@
 # Context ownership and retention
 
-Purpose: Select documentation and maintain context files.
-Read when: Choosing which docs to read, or creating/maintaining a context file.
-Authority: Approved repository guidance.
-Parent: [AGENTS.md](../AGENTS.md).
-Retention: Current routes, file contract and retention rules; no PR diary.
+Use this map when selecting or maintaining repository documentation. Read it
+on demand; it is not required context for every task or every turn.
 
 ## Default and task context
 
 `AGENTS.md` is the sole repository agent entry point. Runners that support it
-load it at startup. Other runners (see [runners guide](guides/runners.md)) should
-be pointed at it explicitly; avoid duplicate rule files. Specialized context is
-selected by task. History and evidence are never default context.
+load applicable instructions at startup; those instructions may remain in
+context across turns. The repo does not require rereading files every turn.
+There are no blanket Markdown imports.
+Other runners must be configured to use AGENTS.md explicitly if needed.
+
+Core principles in AGENTS.md apply throughout repo work. Frontend/backend
+steering is the default for its domain; a cross-domain change loads both.
+Specialized context is selected by task. Read relevant sections, not every
+document or every linked reference. None of the history or evidence below
+is default context. External runner settings can add context. This policy does not measure runtime
+loading or token consumption.
+
+Application context, fixtures, and reports are not coding-agent rules.
 
 ## What to track and update with each PR
+
+Explanatory comments are banned outside Bend. Existing Bend files/comments,
+including installation artifacts and supporting setup/evidence docs, are
+preserved at the user's request. Flag a conflict instead of editing those files.
+Lint, type, build, and proof checks remain required; a functional tool directive
+may use comment syntax. Prefer a configuration equivalent when viable without
+weakening checks. API handler docstrings remain required for generated API documentation.
 
 Active documents describe current state. At each PR or relevant change, review
 the affected owners below and rewrite changed sections in place. Do not rewrite
 unaffected files just to mark a PR transition. Review each edit for a necessary
 change in meaning; skip wording-only rewrites when the existing text is correct.
 
-Track only information that changes a future action or interpretation:
-current approved constraints, relevant rationale, unresolved choices/blockers,
-working setup/usage, and the minimum evidence needed to support a claim.
+Track only information that changes a future action or interpretation.
+This includes approved constraints, relevant rationale, unresolved choices, working setup and necessary evidence.
 Do not track routine progress, completed task checklists, review transcripts,
 repeated test output, abandoned proposals, or a decision entry for every PR.
 Every PR reports actual file changes under Knowledge updates using concise
@@ -37,8 +50,8 @@ When state changes:
    duplicated instructions rather than adding a newer entry beneath them.
 2. Remove resolved questions/blockers and completed task instructions. Keep a
    short current outcome only when it still affects future work.
-3. Preserve core and approved domain principles unless explicit direction
-   supersedes them; age or a one-off exception does not make a principle stale.
+3. Preserve core and approved domain principles unless explicit direction supersedes them.
+   Age or a one-off exception does not make a principle stale.
    Keep approval distinct from proposals. Remove resolved proposals from active
    guidance, preserving selected rationale in history when useful. Check source
    authority when unclear; do not invent approval.
@@ -110,15 +123,24 @@ not another chronological log.
 
 ## Document owners
 
-| Document | Read trigger / owned current state | Retention |
+Update current owners in place when their meaning changes. Keep one owner per fact.
+Preserve Bend artifacts unless the user explicitly authorizes their replacement.
+
+| Document | Read trigger / owned state | Retention |
 | --- | --- | --- |
-| [AGENTS.md](../AGENTS.md) | All repo work: common rules and reading routes. | Small, stable instructions; never a running log. |
-| [This map](README.md) | Selecting docs or maintaining context files. | Current routes, contract, retention rules. |
-| [Plan](plan.md) | Scope, ticket queue and phase planning. | Current checkpoint, approved gates, unresolved choices. |
-| [Vision](vision.md) | Major milestone review or choosing the next phase. | Current destination; no backlog. |
-| [Decisions](decisions.md) | Rationale not owned elsewhere. | Short current rationale; no dated log. |
-| [Backend steering](steering/backend.md) | Backend/API changes. | Approved reusable principles. |
-| [Frontend steering](steering/frontend.md) | UI changes. | Approved reusable principles; proposals marked pending. |
-| [PR writing](pr-writing.md) | Opening/updating/reviewing PRs. | Current PR contract and merge guard. |
-| [History index](history/README.md) | File lifecycle changes, revisited decisions, major milestones. | Searchable index; never default context. |
-| [Guides](guides/) | Adopting, customizing, runner setup. | Current instructions. |
+| [Agent instructions](../AGENTS.md) | All repository work: rules and reading routes. | Stable rules, without progress logs. |
+| [This map](README.md) | Selecting or maintaining context. | File contract, ownership and retention. |
+| [Repository cover](../README.md) | Understanding the harness. | Current introduction. |
+| [Quickstart](../QUICKSTART.md) | Adopting the harness in a project. | Working adoption steps. |
+| [Configuration](configuration.md) | Changing review paths or the base branch. | Current configuration contract. |
+| [Plan](plan.md) | Agreeing scope or delivery gates. | Approved scope, current checkpoint and unresolved choices. |
+| [Vision](vision.md) | Choosing a product phase. | Direction, with proposals distinguished from approval. |
+| [Decisions](decisions.md) | Rationale without another owner. | Current decisions and relevant reasons. |
+| [Frontend steering](frontend-steering.md) | UI work. | Approved interaction guidance. |
+| [Backend steering](backend-steering.md) | Backend and API work. | Approved backend guidance. |
+| [Local validation](local-validation.md) | Setup, tests and project checks. | Reproducible commands and their limits. |
+| [Bend](bend.md) | Enabling or maintaining formal checks. | Optional setup, proof boundaries and required checks. |
+| [PR writing](pr-writing.md) | Opening, updating or reviewing a PR. | Description, feedback and merge workflow. |
+| [PR template](../.github/pull_request_template.md) | Preparing a PR description. | Required and optional fields. |
+| [Review criteria](../.github/codex-review.md) | Reviewing code and context. | Judgment required beyond automated checks. |
+| [History index](history/README.md) | File lifecycle changes, revisited decisions or major phases. | Selected traces with sources and status. |

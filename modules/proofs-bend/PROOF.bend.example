@@ -1,6 +1,0 @@
-# Example only: one proof per law in LAWS.bend.
-#
-# import ./LAWS.bend as Laws
-#
-# def Laws.core_preserves_input(value):
-#   {==}

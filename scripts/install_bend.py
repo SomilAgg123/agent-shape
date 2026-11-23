@@ -8,7 +8,7 @@ import subprocess
 SOURCE_SHA = "ef6278149f398132c006b4eaed73ee751fb8d897"
 BEND_VERSION = "2.0.35"
 BUN_VERSION = "1.4.2"
-ROOT = Path.cwd()
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def install(destination):
@@ -43,7 +43,7 @@ def main():
         executable = install(args.destination.resolve())
         if os.environ.get("GITHUB_ENV"):
             with open(os.environ["GITHUB_ENV"], "a") as output:
-                output.write(f"BEND_EXECUTABLE={executable}\n")
+                output.write(f"AGENT_SHAPE_BEND={executable}\n")
         print(f"Installed Bend {BEND_VERSION}: {executable}")
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Bend setup failed: {error}\n")

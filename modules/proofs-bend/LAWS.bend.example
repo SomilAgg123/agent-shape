@@ -1,9 +1,0 @@
-# Example only: replace with laws about one core invariant of your project.
-# Pattern (from the original pilot): import your Bend module, then state laws
-#
-# import Base
-# import ./bend/core.bend as Core
-#
-# law core_preserves_input:
-#   for +value: Core.Input
-#   {Core.unwrap(Core.wrap(value)) == value : Core.Input}
