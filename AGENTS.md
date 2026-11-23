@@ -63,7 +63,7 @@ Write for a reader who knows the product's purpose but may not know the code.
 - Use familiar, concrete words. Use one term for each concept and one meaning
   for each term. Avoid idioms, vague claims and unnecessary technical language.
 - Name features after the user's action or outcome. Prefer familiar verbs and
-  nouns, such as "Save drafts automatically" or "Compare customer answers."
+  nouns, such as "Save drafts automatically" or "Compare saved versions."
   Keep names short and specific; avoid vague labels such as "Smart Processing."
 - Keep exact code/API identifiers, commands, paths, test names and quoted
   evidence. Explain unfamiliar technical terms when first used. Do not simplify

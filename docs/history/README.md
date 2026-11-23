@@ -7,7 +7,6 @@ Parent: [Context map](../README.md).
 Retention: Topic, source, status and current owner for each useful trace.
 
 No adopting-project decision traces are recorded.
-Customer Memory's product history is not part of this template.
 
 When retaining a trace, record its source, decision, rationale, status and current owner.
 Keep only information that helps explain a future choice or constraint.

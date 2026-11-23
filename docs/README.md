@@ -133,7 +133,6 @@ Preserve Bend artifacts unless the user explicitly authorizes their replacement.
 | [Repository cover](../README.md) | Understanding the harness. | Current introduction. |
 | [Quickstart](../QUICKSTART.md) | Adopting the harness in a project. | Working adoption steps. |
 | [Configuration](configuration.md) | Changing review paths or the base branch. | Current configuration contract. |
-| [Source](source.md) | Understanding the extraction boundary or refreshing the harness. | Source revision and deliberate adaptations. |
 | [Plan](plan.md) | Agreeing scope or delivery gates. | Approved scope, current checkpoint and unresolved choices. |
 | [Vision](vision.md) | Choosing a product phase. | Direction, with proposals distinguished from approval. |
 | [Decisions](decisions.md) | Rationale without another owner. | Current decisions and relevant reasons. |

@@ -40,12 +40,12 @@ def repository(tmp_path):
     git(tmp_path, "config", "user.email", "tests@example.invalid")
     git(tmp_path, "config", "user.name", "Tests")
     (tmp_path / "docs").mkdir()
-    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- CM-12: Maintenance\n- CM-120: Other task\n\n## Done\n")
+    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- TASK-12: Maintenance\n- TASK-120: Other task\n\n## Done\n")
     (tmp_path / "docs/usage.md").write_text("# Usage\n\n## Save files\n\nCurrent behavior.\n")
     (tmp_path / "AGENTS.md").write_text("# Guidance\n\n[Usage](docs/usage.md#save-files)\n")
     (tmp_path / "main.py").write_text("value = 1\n")
     base = commit(tmp_path)
-    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- CM-120: Other task\n\n## Done\n\n- CM-12: Maintenance\n")
+    (tmp_path / "docs/board.md").write_text("# Work\n\n## To build\n\n- TASK-120: Other task\n\n## Done\n\n- TASK-12: Maintenance\n")
     (tmp_path / "main.py").write_text("value = 2\n")
     head = commit(tmp_path)
     return tmp_path, base, head, {"repository_full_name": "test/repo", "pr_number": 12}
@@ -201,7 +201,7 @@ def test_review_requires_one_reason_for_each_changed_context_file(repository, ch
 def test_review_cannot_approve_flagged_context_or_language(merge_inputs, field):
     snapshot, request, report = merge_inputs
     item = report[field][0] if field == "context_review" else report[field]
-    item.update(verdict="changes-required", reason="Remove the repeated milestone recap." if field == "context_review" else "Explain source-linked ledger normalization in familiar words.")
+    item.update(verdict="changes-required", reason="Remove the repeated milestone recap." if field == "context_review" else "Explain transient transfer recovery in familiar words.")
     with pytest.raises(MaintenanceError, match="ready"):
         check_review(report, request)
     report["decision"] = "changes-required"

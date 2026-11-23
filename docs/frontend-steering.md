@@ -27,7 +27,7 @@ contracts in their own document, linked from [local validation](local-validation
   changes, sources, short recorded rationales and failures.
 
 - **Keep inputs available during testing.** Support testing changes without
-  losing questions or edits during iteration.
+  losing inputs or edits during iteration.
 
 ## Maintaining this file
 

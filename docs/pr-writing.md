@@ -19,7 +19,7 @@ prefix is 5–10 words describing the high-level capability built.
 - L: substantial changes across components, with a larger review surface.
 - XL: too large for one milestone; split into smaller PRs before building.
 
-Choose size by scope and review effort, not a line-count threshold. Prefer small, bounded PRs. Example: `[S] Compare saved answers before applying edits`.
+Choose size by scope and review effort, not a line-count threshold. Prefer small, bounded PRs. Example: `[S] Compare saved versions before applying edits`.
 
 Name the action or outcome in the title. For technical maintenance, name the
 concrete problem fixed. These examples illustrate wording, not planned features:
@@ -28,7 +28,7 @@ concrete problem fixed. These examples illustrate wording, not planned features:
 | --- | --- |
 | Implement incremental draft persistence | [S] Save drafts automatically while users edit |
 | Add transient upload failure recovery | [S] Retry failed uploads after temporary connection errors |
-| Expose query-context provenance | [S] Show which context files were used for each answer |
+| Expose task input provenance | [S] Show which files a task used |
 
 ## Description
 
@@ -40,8 +40,8 @@ enough to cover new tests and meaningful context changes.
 - Description: 10–20 words explaining the capability delivered, in past tense.
 - What changed: 1–3 bullets, 10–20 words each. Start each with what was made
   possible or changed for the user, in past tense. For example, "Enabled
-  comparison of customer answers before applying edits" rather than "Added
-  an evaluator and fixtures."
+  comparison of saved versions before applying edits" rather than "Added
+  comparison logic and fixtures."
 - Knowledge updates (every PR): concise past-tense bullets, normally 10–20
   words each, with links to affected knowledge/context files. Lead with Updated,
   Created, Moved, or Removed and describe the knowledge changed. Each newly
@@ -60,7 +60,7 @@ enough to cover new tests and meaningful context changes.
   When Bend is enabled, report proof, generated-output and regression results for every code PR.
   Include the pinned version and unresolved blockers. Skipped checks are incomplete validation, even when Bend files were unchanged.
 - Screenshots (UI PRs): embed desktop web screenshots of the changed UI in the
-  PR description. Mobile screenshots are not needed at this stage. Omit this
+  PR description. Include relevant viewport screenshots for responsive changes. Omit this
   section for PRs without UI edits.
 - Design steering (UI PRs): 10–20 words per proposed principle, with a link
   to `docs/frontend-steering.md` and approval status. If none, say "No new
@@ -83,8 +83,8 @@ replace the sentence limits.
 Before opening or updating a PR, edit the description once for a reader who
 knows the product but has not read the code. State the problem, what changed,
 and how it was checked in short, direct sentences. Replace technical shorthand
-with the behavior it describes. Write "filled in missing source links" instead of
-"normalized source-linked ledger edits." Write "kept saved history unchanged"
+with the behavior it describes. Write "retried failed uploads" instead of
+"implemented transient transfer recovery." Write "kept saved history unchanged"
 instead of "preserved append-only invariants." Explain a necessary technical term on
 first use. Keep exact test names and commands where needed, but describe their
 results in familiar words. Remove repeated claims. Keep relevant limits and
