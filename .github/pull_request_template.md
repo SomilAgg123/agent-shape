@@ -6,28 +6,19 @@
 
 ## Screenshots
 
-## Testing
+## Validation
 
-- `test_name`: Verified what happened under this condition and what stayed correct.
+| Check | Result and evidence |
+| --- | --- |
+| Python tests | <Commands, pass/fail counts, and relevant limits.> |
+| UI tests | <Commands, pass/fail counts, and relevant limits.> |
+| Browser checks | <Commands, pass/fail counts, and relevant limits.> |
+| Build and interface | <Commands, results, and relevant limits.> |
+| Bend | <Pinned version, proof, generated-output, and regression results.> |
+| Spend | <Total paid model cost in USD. Use $0 when no paid calls ran.> |
 
-Red: <Failing test and behavioral reason, when TDD applies.>
-Green: <Passing command and result, when TDD applies.>
-Refactor: <Changes or none, when TDD applies.>
-
-## Maintenance
-
-Ticket: <Stable ID, or none.>
-Ticket outcome: <complete, partial, or none.>
-Ticket reason: <Completed scope, remaining work, or why no ticket applies.>
-Context disposition: <updated or unchanged.>
-TDD: <applied or not-applicable.>
-TDD reason: <Behavior tested, or reason for exemption.>
+| Added test | Behavior checked |
+| --- | --- |
+| `test_name` | Verified what happened under this condition and what stayed correct. |
 
 ## Design steering
-
-## What remains
-
-<details>
-<summary>Run details</summary>
-
-</details>

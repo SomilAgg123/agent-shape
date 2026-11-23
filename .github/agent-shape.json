@@ -1,19 +1,15 @@
 {
-  "project_name": "{{PROJECT_NAME}}",
   "base_branch": "main",
-  "board_path": "docs/plan.md",
-  "board_heading": "Queue",
-  "workflow_name": "PR maintenance",
-  "workflow_file": ".github/workflows/pr.yml",
-  "required_jobs": ["validation / validation", "context / context", "PR maintenance gate"],
-  "review_prompt": ".github/review-prompt.md",
-  "review_schema": ".github/review.schema.json",
-  "context_files": ["AGENTS.md", "README.md", "QUICKSTART.md", "CONTRIBUTING.md", "SECURITY.md", ".github/pull_request_template.md", ".github/review-prompt.md"],
-  "context_prefixes": ["docs/"],
-  "docs_only_assets": ["docs/screenshots/"],
-  "always_review": ["AGENTS.md", "docs/README.md", "docs/pr-writing.md"],
+  "context_files": [],
+  "context_prefixes": [],
+  "always_review": [],
   "review_routes": [
-    {"prefixes": ["src/", "api/"], "docs": ["docs/steering/backend.md"]},
-    {"prefixes": ["web/", "ui/"], "docs": ["docs/steering/frontend.md"]}
-  ]
+    {"prefixes": ["api/", "src/"], "docs": ["docs/backend-steering.md"]},
+    {"prefixes": ["web/", "ui/"], "docs": ["docs/frontend-steering.md"]}
+  ],
+  "bend": {
+    "enabled": false,
+    "generated_check": [],
+    "regression_check": []
+  }
 }

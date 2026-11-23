@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "strings": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  },
+  "properties": {
+    "base_branch": {"type": "string", "minLength": 1},
+    "context_files": {"$ref": "#/$defs/strings"},
+    "context_prefixes": {"$ref": "#/$defs/strings"},
+    "always_review": {"$ref": "#/$defs/strings"},
+    "review_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["prefixes", "docs"],
+        "properties": {
+          "prefixes": {"$ref": "#/$defs/strings"},
+          "docs": {"$ref": "#/$defs/strings"}
+        }
+      }
+    },
+    "bend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "generated_check", "regression_check"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "generated_check": {"type": "array", "items": {"type": "string"}},
+        "regression_check": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

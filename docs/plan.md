@@ -1,27 +1,25 @@
-# Plan
+# Delivery plan
 
-Purpose: Own approved scope, the ticket queue and review gates.
-Read when: Planning scope or milestones, or declaring a PR ticket.
-Authority: Explicit user direction. Proposals stay marked as proposed.
+Purpose: Own the project's approved scope and review checkpoints.
+Read when: Planning work or resolving scope conflicts.
+Authority: Explicit user direction. Proposed scope is not approved scope.
 Parent: [Context map](README.md).
-Retention: Current checkpoint and queue; remove completed sequences.
+Retention: Current scope, checkpoints and unresolved choices.
 
 ## Current checkpoint
 
-Describe what exists today and what is approved next.
+The repository contains a reusable harness. No application delivery scope is defined.
+Replace this statement with the adopting project's current state and approved work.
 
-## Queue
+## Review gates
 
-The PR checker reads this heading (`board_heading` in `.github/agent-shape.json`).
-Use stable IDs. Remove an item in the PR that completes it; keep it for partial work.
+- Agree the bounded scope before implementation starts.
+- Agree architecture changes before implementation or concurrent work starts.
+- Use concurrent agents only when explicitly authorized for the task.
+- Stop at each PR milestone for feedback before starting the next stage.
+- Complete code review and automated checks before final user acceptance.
+- Keep shared API, component and style changes serialized unless coordination is agreed.
+- Separate approval for paid model execution from approval for deterministic implementation checks.
 
-### PR 1 — First approved change
-
-Describe the agreed outcome.
-
-- APP-1: Example list-style ticket
-
-## Gates
-
-- Planning review: the user approves scope before implementation starts.
-- Delivery review: stop at each PR milestone for feedback.
+Keep future delivery proposals separate from approved work.
+Record only current scope here. Keep task handoffs in chat.

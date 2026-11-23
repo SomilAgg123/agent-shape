@@ -1,46 +1,28 @@
 # agent-shape
 
-A repository template that gives coding agents a shape to work in: one rule
-file, disciplined context docs, a strict PR contract, a CI gate, and an
-agent-run review with a merge guard.
+A reusable coding-agent harness extracted from the current Customer Memory workflow.
+It gives agents scoped instructions, maintained context, readable PRs and a review gate.
 
-## What you get
+## What it does
 
-- **`AGENTS.md`** — the single entry point: scope discipline, TDD, plain-language
-  naming, stop-at-each-milestone, and a task → doc routing table.
-- **Context system** (`docs/README.md`) — every context file has a Purpose /
-  Read when / Authority / Parent / Retention header, one owner per fact, and
-  "replace, don't append" retention. History stays out of default context.
-- **PR contract** (`.github/pull_request_template.md`, `docs/pr-writing.md`) —
-  Knowledge updates linking every changed context file, Red/Green/Refactor
-  evidence, and a ticket from the queue in `docs/plan.md`.
-- **PR checker** (`scripts/harness/pr_maintenance.py`) — enforces the contract
-  in CI, prepares the agent review request, validates the review report
-  against a JSON schema, and runs a merge guard that refuses stale reviews or CI evidence.
-- **CI** — `pr.yml` runs validation + context check, then a gate job. Actions
-  never call a model; the review happens in your agent's chat.
-- **Add-ons** — formal proofs with Bend (`modules/proofs-bend`, off by default).
-- **Example** — `examples/` shows a PR body that passes and one that is blocked.
+- Loads `AGENTS.md` as the entry point, then reads context for the task.
+- Keeps approved scope separate from proposals and stops at PR review checkpoints.
+- Uses meaningful tests for new behavior and retains only useful context.
+- Applies Simplified Technical English rules to changed prose and user communication.
+- Reports validation, paid model spend and linked knowledge changes in each PR.
+- Requires explicit context and language review before the local merge guard passes.
+- Checks that the review and CI evidence match the current PR revision.
 
-## How the loop works
+Actions runs deterministic checks. The agent reviews code and context in the current chat.
+Bend proofs are optional and disabled by default.
 
-```
-plan.md queue ──► agent builds (TDD) ──► PR with contract ──► CI: validate + context ──► gate
-                                                                     │
-                     merge ◄── merge-guard ◄── review report ◄── agent review in chat
-```
+## Start here
 
-## Get started
+Use the [quickstart](QUICKSTART.md) to adopt this harness.
+Read [configuration](docs/configuration.md) for project paths and [local validation](docs/local-validation.md) for checks.
+The [source record](docs/source.md) identifies the upstream revision and extraction choices.
 
-See [QUICKSTART.md](QUICKSTART.md). Adding to an existing repo:
-[adopting guide](docs/guides/adopting.md). Configuration:
-[customizing guide](docs/guides/customizing.md). Agent setup:
-[runners guide](docs/guides/runners.md).
-
-## Requirements
-
-Python 3.10+ and git. The checker needs `jsonschema` and `markdown-it-py`
-(`requirements-ci.txt`).
+Python 3.10+ and Git are required. The CI workflow uses Python 3.12.
 
 ## License
 

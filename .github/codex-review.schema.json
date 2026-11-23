@@ -2,7 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["repository", "pr_number", "base_sha", "head_sha", "body_sha256", "decision", "summary", "reviewed_context_files", "findings"],
+  "required": ["repository", "pr_number", "base_sha", "head_sha", "body_sha256", "decision", "summary", "reviewed_context_files", "context_review", "language_review", "findings"],
+  "$defs": {
+    "verdict": {"type": "string", "enum": ["ready", "changes-required"]},
+    "reason": {"type": "string", "pattern": "\\S"}
+  },
   "properties": {
     "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
     "pr_number": {"type": "integer", "minimum": 1},
@@ -12,6 +16,28 @@
     "body_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "summary": {"type": "string", "minLength": 1},
     "reviewed_context_files": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "context_review": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "verdict", "reason"],
+        "properties": {
+          "file": {"type": "string", "minLength": 1},
+          "verdict": {"$ref": "#/$defs/verdict"},
+          "reason": {"$ref": "#/$defs/reason"}
+        }
+      }
+    },
+    "language_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reason"],
+      "properties": {
+        "verdict": {"$ref": "#/$defs/verdict"},
+        "reason": {"$ref": "#/$defs/reason"}
+      }
+    },
     "findings": {
       "type": "array",
       "items": {
@@ -19,7 +45,7 @@
         "additionalProperties": false,
         "required": ["category", "severity", "file", "line", "message"],
         "properties": {
-          "category": {"type": "string", "enum": ["code", "context", "tdd"]},
+          "category": {"type": "string", "enum": ["code", "context", "language", "tdd"]},
           "severity": {"type": "string", "enum": ["P0", "P1", "P2", "P3"]},
           "file": {"type": "string", "minLength": 1},
           "line": {"type": "integer", "minimum": 1},
